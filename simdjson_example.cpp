@@ -137,6 +137,8 @@ int main()
     //Rough idea, in a couple loops appending the mangled_example_json above forms a complete object
     //although with some garbage inbetween. Here we're aiming to slowly chew through the data crossing
     //fingers we find / land on a { that's the begining of the complete object somewhere in the stream
+
+    //bit leaky this loop doesn't keep up with what we're appending
     while(true) {
         //append to the existing buffer
         if (buffer.capacity() < (buffer.size() + mangled_example_json.size() + simdjson::SIMDJSON_PADDING)) {
@@ -187,8 +189,21 @@ int main()
                 //ok?
                 v = {buffer.data()+lbrace_distance, 1}; //stream_buffer.capacity()-dist
             }
-*/
-            //doing neither of the above? we'll never find "t" field
+            */
+            /*
+            //never finds the t field, although it'll validate we're on an object
+            simdjson::ondemand::json_type jtype;
+            auto type_err = json_document.type().get(jtype);
+            if (type_err) {
+                std::cout << "failed to get document type\n";
+                buffer.erase(buffer.begin());
+            }
+            if (jtype != simdjson::ondemand::json_type::object) {
+                std::cout << "not an object\n";
+                buffer.erase(buffer.begin());
+            }
+            */
+            //doing none of the above? we'll never find "t" field
             //top level of the example object is a timestamp in milliseconds
             size_t ts;
             //auto t_err = json_document["t"].get_uint64().get(ts);
